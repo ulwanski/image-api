@@ -78,7 +78,12 @@ export class S3StorageService implements StorageService {
       }),
     );
 
-    return this.streamToBuffer(res.Body as any);
+    const body = res.Body;
+    if (body instanceof Readable) {
+      return this.streamToBuffer(body);
+    }
+
+    return Buffer.from(await body!.transformToByteArray());
   }
 
   /**
@@ -95,14 +100,10 @@ export class S3StorageService implements StorageService {
     );
   }
 
-  private async streamToBuffer(stream: Readable | Uint8Array): Promise<Buffer> {
-    if (stream instanceof Uint8Array) {
-      return Buffer.from(stream);
-    }
-
-    const chunks: Uint8Array[] = [];
+  private async streamToBuffer(stream: Readable): Promise<Buffer> {
+    const chunks: Buffer[] = [];
     for await (const chunk of stream) {
-      chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     }
     return Buffer.concat(chunks);
   }

@@ -43,13 +43,6 @@ export class ImageRepository {
     return rows[0] ?? null;
   }
 
-  async findByPath(path: string): Promise<ImageRecord | null> {
-    const query: string = `SELECT * FROM images WHERE path = $1`;
-
-    const { rows } = await this.pool.query<ImageRecord>(query, [path]);
-    return rows[0] ?? null;
-  }
-
   async findAll(options: FindAllOptions): Promise<{ rows: ImageRecord[]; total: number }> {
     const conditions: string[] = [];
     const params: unknown[] = [];
