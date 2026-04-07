@@ -7,7 +7,7 @@ REST API for uploading, processing, and serving images. Built with NestJS, Postg
 The entire stack runs in Docker. No local dependencies required beyond Docker and Docker Compose.
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/ulwanski/image-api
 cd images-api
 docker compose up
 ```
