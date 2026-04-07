@@ -11,9 +11,21 @@ const mimeTypes: Record<string, string> = {
   avif: 'image/avif',
 };
 
+/**
+ * Provides static methods for image metadata extraction,
+ * resizing, and format-aware size optimization using sharp.
+ */
 @Injectable()
 export class ImageConvertService {
 
+
+  /**
+   * Extracts metadata from an image buffer including dimensions, format, and MIME type.
+   *
+   * @param buffer - Raw image data
+   * @returns Extracted image metadata
+   * @throws Error when dimensions or format cannot be detected
+   */
   public static async GetMetadata(buffer: Buffer): Promise<ImageMetadata> {
     const metadata: Metadata = await sharp(buffer).metadata();
 
@@ -35,6 +47,15 @@ export class ImageConvertService {
     }
   }
 
+  /**
+   * Resizes an image to fit within the given dimensions.
+   * Uses `inside` fit strategy to preserve aspect ratio and prevents upscaling.
+   *
+   * @param data - Raw image data
+   * @param width - Maximum target width in pixels
+   * @param height - Maximum target height in pixels
+   * @returns Resized image buffer
+   */
   public static async Resize(data: Buffer, width: number, height: number): Promise<Buffer> {
     return sharp(data)
       .resize(width, height, {
@@ -43,6 +64,14 @@ export class ImageConvertService {
       }).toBuffer();
   }
 
+  /**
+   * Optimizes image file size while preserving the original format.
+   * Applies format-specific compression (e.g. JPEG quality, PNG compression level).
+   *
+   * @param data - Raw image data
+   * @param quality - Compression quality, 0-100 (default: 85)
+   * @returns Optimized image buffer
+   */
   public static async OptimizeSize(data: Buffer, quality: number = 85): Promise<Buffer> {
     const metadata: ImageMetadata = await ImageConvertService.GetMetadata(data);
 

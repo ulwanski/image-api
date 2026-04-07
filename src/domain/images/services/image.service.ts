@@ -8,10 +8,22 @@ import { ImageResponseDto } from '../../../application/dto/image-response.dto';
 import { ImageMetadata } from '../../../application/interfaces/image-metadata.interface';
 import { PaginatedResponseDto } from '../../../application/dto/paginated-response.dto';
 
+/**
+ * Orchestrates image upload, retrieval, and listing operations.
+ * Coordinates between file storage, image processing, and database persistence.
+ */
 @Injectable()
 export class ImageService {
   constructor(private readonly fileService: FileService, private readonly imageRepository: ImageRepository) {}
 
+  /**
+   * Processes and stores an uploaded image.
+   * Detects original dimensions, optionally resizes to target dimensions,
+   * optimizes file size, persists to storage and saves metadata to database.
+   *
+   * @param image - Upload input containing file buffer and metadata
+   * @returns Image response DTO with generated ID and URL
+   */
   public async store(image: UploadImageInput): Promise<ImageResponseDto> {
     let buffer: Buffer = image.buffer;
 
@@ -44,6 +56,14 @@ export class ImageService {
     return this.mapToDto(record);
   }
 
+  /**
+   * Fetches the binary image file by ID.
+   *
+   * @param id - Image record ID
+   * @returns Object containing the file buffer, MIME type, and filename
+   * @throws NotFoundException when no image record exists for the given ID
+   * @throws Error when the file is missing from storage
+   */
   public async fetch(id: number): Promise<{ buffer: Buffer; mimeType: string; filename: string }> {
     // Find image metadata in database
     const record: ImageRecord | null = await this.imageRepository.findById(id);
@@ -66,6 +86,13 @@ export class ImageService {
     };
   }
 
+  /**
+   * Retrieves image metadata by ID.
+   *
+   * @param id - Image record ID
+   * @returns Image response DTO
+   * @throws NotFoundException when no image record exists for the given ID
+   */
   public async findOne(id: number): Promise<ImageResponseDto> {
     // Find image metadata in database
     const record: ImageRecord | null = await this.imageRepository.findById(id);
@@ -77,6 +104,14 @@ export class ImageService {
     return this.mapToDto(record);
   }
 
+  /**
+   * Returns a paginated list of images with optional title filtering.
+   *
+   * @param page - Page number (1-indexed)
+   * @param limit - Items per page (clamped to max 100)
+   * @param title - Optional case-insensitive partial title filter
+   * @returns Paginated response with image DTOs and pagination metadata
+   */
   public async find(page: number, limit: number, title?: string): Promise<PaginatedResponseDto<ImageResponseDto>> {
     // Limit max amount of rows returned to 100
     limit = Math.min(limit, 100);

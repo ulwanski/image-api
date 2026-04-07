@@ -4,6 +4,14 @@ import { StorageService } from '../../application/interfaces/storage.interface';
 import { S3StorageService } from './s3-storage.service';
 import { LocalStorageService } from './local-storage.service';
 
+/**
+ * Factory provider that creates the appropriate StorageService implementation
+ * based on the `STORAGE_DRIVER` environment variable.
+ *
+ * Supported drivers:
+ * - `local` — stores files on the local filesystem
+ * - `s3` — stores files in an S3-compatible bucket (e.g. MinIO, AWS S3)
+ */
 export const StorageProvider: Provider = {
   provide: 'StorageService',
   inject: [ConfigService],

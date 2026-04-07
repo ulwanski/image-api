@@ -4,10 +4,24 @@ import { createHash } from 'crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import type { StorageService } from '../../../application/interfaces/storage.interface.js';
 
+/**
+ * Manages file storage operations with content-addressable paths.
+ * Files are stored under SHA-256 hash-based directory structure
+ * for natural deduplication and even distribution.
+ */
 @Injectable()
 export class FileService {
   constructor(@Inject('StorageService') private readonly storage: StorageService) {}
 
+  /**
+   * Stores a file in storage under a content-addressable path.
+   * Generates a SHA-256 hash from file contents and builds a sharded
+   * directory structure (e.g. `a5/fe/34/a5fe34...abc.jpg`).
+   *
+   * @param data - Raw file buffer
+   * @param originalName - Original filename, used to preserve file extension
+   * @returns Storage path of the saved file
+   */
   public async put(data: Buffer, originalName: string): Promise<string> {
     // Create hash from file data, f.e. 2896ee5e2fd3c12621bcc4ff9b9fe879f22fc15a55aaefb056fa72daf03d8b8f
     const fileHash: string = this.calculateFileHash(data);
@@ -26,10 +40,21 @@ export class FileService {
     return this.storage.put(data, filePath);
   }
 
+  /**
+   * Retrieves a file from storage.
+   *
+   * @param path - Storage path of the file
+   * @returns File buffer, or null if the file does not exist
+   */
   public async get(path: string): Promise<Buffer | null> {
     return this.storage.get(path);
   }
 
+  /**
+   * Deletes a file from storage.
+   *
+   * @param path - Storage path of the file to delete
+   */
   public async delete(path: string): Promise<void> {
     return this.storage.delete(path);
   }

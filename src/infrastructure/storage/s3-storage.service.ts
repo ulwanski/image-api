@@ -10,6 +10,11 @@ import {
   CreateBucketCommand, HeadBucketCommand,
 } from '@aws-sdk/client-s3';
 
+/**
+ * S3-compatible implementation of the StorageService interface.
+ * Works with Amazon S3, MinIO, and other S3-compatible providers.
+ * Automatically creates the target bucket on module initialization if it does not exist.
+ */
 @Injectable()
 export class S3StorageService implements StorageService {
   private client: S3Client;
@@ -28,6 +33,10 @@ export class S3StorageService implements StorageService {
     });
   }
 
+  /**
+   * Ensures the configured S3 bucket exists, creating it if necessary.
+   * Called automatically by NestJS on module initialization.
+   */
   public async onModuleInit(): Promise<void> {
     try {
       await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
@@ -36,14 +45,13 @@ export class S3StorageService implements StorageService {
     }
   }
 
-  public async createBucket(bucketName: string): Promise<void> {
-    await this.client.send(
-      new CreateBucketCommand({
-        Bucket: bucketName,
-      }),
-    );
-  }
-
+  /**
+   * Uploads a file to the S3 bucket.
+   *
+   * @param file - File buffer to upload
+   * @param filePath - Object key (path) within the bucket
+   * @returns The object key of the uploaded file
+   */
   public async put(file: Buffer, filePath: string): Promise<string> {
     await this.client.send(
       new PutObjectCommand({
@@ -56,6 +64,12 @@ export class S3StorageService implements StorageService {
     return filePath;
   }
 
+  /**
+   * Downloads a file from the S3 bucket.
+   *
+   * @param filePath - Object key (path) within the bucket
+   * @returns File contents as a buffer
+   */
   public async get(filePath: string): Promise<Buffer> {
     const res = await this.client.send(
       new GetObjectCommand({
@@ -67,6 +81,11 @@ export class S3StorageService implements StorageService {
     return this.streamToBuffer(res.Body as any);
   }
 
+  /**
+   * Deletes a file from the S3 bucket.
+   *
+   * @param filePath - Object key (path) within the bucket
+   */
   public async delete(filePath: string): Promise<void> {
     await this.client.send(
       new DeleteObjectCommand({

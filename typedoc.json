@@ -1,0 +1,12 @@
+{
+  "tsconfig": "tsconfig.docs.json",
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "out": "docs",
+  "exclude": ["**/*.spec.ts", "**/*.e2e-spec.ts", "**/*.test.ts", "node_modules"],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "readme": "README.md",
+  "name": "Images API",
+  "includeVersion": true
+}
