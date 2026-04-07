@@ -8,7 +8,7 @@ The entire stack runs in Docker. No local dependencies required beyond Docker an
 
 ```bash
 git clone https://github.com/ulwanski/image-api
-cd images-api
+cd image-api
 docker compose up
 ```
 
