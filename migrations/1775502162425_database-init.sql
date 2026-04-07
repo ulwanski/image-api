@@ -1,6 +1,7 @@
 CREATE TABLE public.images (
     id bigserial NOT NULL,
     path character varying(255) NOT NULL,
+    type character varying(50) NOT NULL,
     title character varying(255),
     width integer NOT NULL,
     height integer NOT NULL,
