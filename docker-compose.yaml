@@ -1,0 +1,83 @@
+name: images-api
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: images_api
+    restart: unless-stopped
+    environment:
+      PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: images
+      DB_USER: images
+      DB_PASSWORD: 9nemNjs1mG4gAJpf
+      STORAGE_BACKEND: s3
+      S3_ENDPOINT: http://minio:9000
+      S3_KEY_ID: images
+      S3_ACCESS_KEY: BrEnfIwGAnU1p55J
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./src:/app/src
+      - ./test:/app/test
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/status"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: images_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: images
+      POSTGRES_USER: images
+      POSTGRES_PASSWORD: 9nemNjs1mG4gAJpf
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U images -d images"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  minio:
+    image: minio/minio:latest
+    container_name: images_s3storage
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: images
+      MINIO_ROOT_PASSWORD: BrEnfIwGAnU1p55J
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio:/data
+    healthcheck:
+      test: [ "CMD", "mc", "ready", "local" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: server /data --console-address ":9001"
+
+volumes:
+  postgres:
+    name: images_postgres
+  minio:
+    name: images_minio
